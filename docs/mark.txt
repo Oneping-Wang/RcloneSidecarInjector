@@ -1,0 +1,27 @@
+K8s集群内私有云存储连接信息：
+  - Endpoint (API 地址): http://10.101.159.243:9000 (这就是你 MinIO 的内网地址)
+  - Access Key: minioadmin 
+  - Secret Key: minioadmin 
+  - Bucket (桶名): test-data
+
+集群配置信息：
+  Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 10.92.2.111:6443 --token pkr6nw.5jc5pyy216ej0pv3 \
+        --discovery-token-ca-cert-hash sha256:b4229169a8b1b9804736ec64576d146a15b567fd2cc69edea84dcd76637b584c

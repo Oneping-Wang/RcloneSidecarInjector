@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: minio-toolbox
+spec:
+  restartPolicy: Never
+  containers:
+  - name: mc
+    image: minio/mc:latest
+    # 核心技巧：覆盖默认的 EntryPoint，让它无限休眠
+    command: ["/bin/sh", "-c", "trap : TERM INT; sleep infinity & wait"]

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rclone-demo-pod
+  annotations:
+    rclone.io/inject: "true"
+spec:
+  restartPolicy: Never
+  volumes:
+  - name: shared-data
+    emptyDir: {}
+  - name: rclone-config
+    secret:
+      secretName: rclone-config
+  containers:
+  - name: app-nginx
+    image: nginx:alpine
+    volumeMounts:
+    - name: shared-data
+      mountPath: /data
+      mountPropagation: HostToContainer
+  - name: rclone-sidecar
+    image: rclone/rclone:latest
+    securityContext:
+      privileged: true
+    args:
+      - "mount"
+      - "minio:test-data"
+      - "/data/mount"
+      - "--config=/etc/rclone/rclone.conf"
+      - "--allow-other"
+      - "--vfs-cache-mode=full"
+      - "--no-check-certificate"
+      - "--allow-non-empty"
+    lifecycle:
+      preStop:
+        exec:
+          command: ["/bin/sh","-c","fusermount -u /data/mount"]
+    volumeMounts:
+    - name: shared-data
+      mountPath: /data/mount
+      mountPropagation: Bidirectional
+    - name: rclone-config
+      mountPath: /etc/rclone

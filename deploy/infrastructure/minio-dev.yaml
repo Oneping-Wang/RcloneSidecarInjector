@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  labels:
+    app: minio
+spec:
+  ports:
+    - port: 9000
+      name: api
+      targetPort: 9000
+    - port: 9001
+      name: console
+      targetPort: 9001
+  selector:
+    app: minio
+  type: ClusterIP  # 仅集群内可访问，符合白皮书 ClusterIP 要求
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  labels:
+    app: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      # 利用 InitContainer 自动创建 Bucket 目录
+      initContainers:
+      - name: create-bucket
+        image: busybox
+        command: ['sh', '-c', 'mkdir -p /data/test-data']
+        volumeMounts:
+        - name: storage
+          mountPath: "/data"
+      containers:
+      - name: minio
+        image: minio/minio:RELEASE.2023-09-04T19-57-37Z
+        args:
+        - server
+        - /data
+        - --console-address
+        - :9001
+        env:
+        # 硬编码账号密码，方便测试
+        - name: MINIO_ROOT_USER
+          value: "minioadmin"
+        - name: MINIO_ROOT_PASSWORD
+          value: "minioadmin"
+        ports:
+        - containerPort: 9000
+        - containerPort: 9001
+        volumeMounts:
+        - name: storage
+          mountPath: "/data"
+      volumes:
+      - name: storage
+        emptyDir: {} # MVP阶段使用临时存储，重启后数据丢失，但速度最快
