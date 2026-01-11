@@ -1,0 +1,20 @@
+{
+  "kind": "AdmissionReview",
+  "apiVersion": "admission.k8s.io/v1",
+  "request": {
+    "uid": "8888-fake-uid-9999",
+    "object": {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "my-target-pod",
+        "annotations": {
+           "rclone.io/inject": "true"  
+        }
+      },
+      "spec": {
+        "containers": [{"name": "nginx", "image": "nginx"}]
+      }
+    }
+  }
+}
