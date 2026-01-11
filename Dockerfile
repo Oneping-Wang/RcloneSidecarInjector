@@ -1,9 +1,11 @@
 # --- 第一阶段：构建阶段 (Builder) ---
 # 使用官方 Go 语言镜像作为构建环境
-FROM golang:1.20-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # 设置工作目录
 WORKDIR /app
+
+ENV GOPROXY=https://goproxy.cn,direct
 
 # 1. 先复制依赖文件 (利用 Docker 缓存机制加速构建)
 COPY go.mod go.sum ./
