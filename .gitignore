@@ -1,0 +1,15 @@
+# 忽略 SSL 证书文件夹 (最重要的！)
+ssl/
+
+# 忽略编译出来的二进制文件 (本地测试生成的)
+webhook
+
+# 忽略手动打包的 Docker 镜像
+*.tar
+
+# 忽略 IDE 的配置文件夹 (如果你用 VS Code 或 GoLand)
+.vscode/
+.idea/
+
+# 忽略 Mac 系统生成的垃圾文件
+.DS_Store

@@ -1,0 +1,35 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: rclone-sidecar-injector
+webhooks:
+  - name: rclone.injector.k8s.io
+    sideEffects: None
+    admissionReviewVersions: ["v1"]
+    failurePolicy: Fail
+    clientConfig:
+      service:
+        name: sidecar-injector-service
+        namespace: default
+        path: "/mutate"
+      # 👇 记得确认这里的 CA Bundle 是你之前生成的那个长字符串！不要弄丢了！
+      caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURFekNDQWZ1Z0F3SUJBZ0lVV3VlMUlLbjRDL1pVZmZ0TjQvMnVyL3RGVVNNd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0dURVhNQlVHQTFVRUF3d09UWGxMT0hOWFpXSm9iMjlyUTBFd0hoY05Nall3TVRFeU1EUXhOekF3V2hjTgpNamN3TVRFeU1EUXhOekF3V2pBWk1SY3dGUVlEVlFRRERBNU5lVXM0YzFkbFltaHZiMnREUVRDQ0FTSXdEUVlKCktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUxlYmNuUkZPSzZQUG5EUVZEN29RU1ZsWU9CWElSSTkKbFFhV2J3UkQ1WVdOR05LWWJYWTJSVWxIdnFHcEJFbHRaSWhKU05BMnVaL2hkMzk1SnlQYy9aRG4wblovOS9DZQpLY1dtSWMwWDJQd09yVlpvRXVKaSt4NWNPeGJHUkhxcUc5SWJ3KzJ3MGtwS05rbGNCaEowMTgzdHB5YTBNcklvCllPc3ltNW1vRjY3WG1WcW5jb0Jwd0tRNjg5Y3k4dWd5NEFOcGlBWm1LY1pkamZGZ0J1MnNyc0hhbkgrVmxSK04KVmZRa1l4N1lOMXBQWDN3eXIzdERhd2tqci8wQklaK3ZjZlRKbjl0bDRmSEw4MGI3S2owU1F5VUJ0Um5qeXZPcwp1dEcza0N5RFJ4UXd1YXhSTko4V0JWWThCR1huNnc0bDNyQW9wWWZDZzhnejkwZWNwTnFuUnBzQ0F3RUFBYU5UCk1GRXdIUVlEVlIwT0JCWUVGQ2ZXWmZjMFVrNk13b0YwM1d1dklUMkRERXFDTUI4R0ExVWRJd1FZTUJhQUZDZlcKWmZjMFVrNk13b0YwM1d1dklUMkRERXFDTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3RFFZSktvWklodmNOQVFFTApCUUFEZ2dFQkFCK1kxWStxa0NGNGh4M0VNdG5ZK0ljWm9VSFVWejhUaW16KzcvbWRJK2FhTFUwd3hLeXlzSFlsCnpsNGVIWklPR0lLVUxmNTkyZzU5NHE0K3ZqcU12KzlYZ2tWSVd5YUZCSThqelcxMmJic1E2b0tkYVZUUHQ1K1cKMHNOVGRvMW9FRStsVEV4Rjc5bTVjRElkTE5WQjZsYXIrQWJUNGRKL3R5TXliWjBBdDNmTTdPdk95OXh1aHhkSApKbSttdEtmU2hxa1o5UXorS2RWWWsyNWpxZjFBVTFudW0xSnFoNFlDZEV0Mm5qQmdRcEwwa3VvdDZrMzBLZjNpCjhoT1lQd2xGUkh0bVozZkNtMmNNdFhsbTNBSER2akt1Nm1NU3htdFpOaDgyZjdhQmVsVzFZME12NVhoR3lLdzkKR0g2UEpDbVl5VVlOMnB5cHJRdnVLclRSNTRKZ2Yzbz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    rules:
+      - operations: ["CREATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+    
+    # 1. 命名空间选择器 (保持原样)
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values: ["kube-system"]
+    
+    # 👇 2. 新增：对象选择器 (精准豁免自己)
+    objectSelector:
+      matchExpressions:
+        - key: app
+          operator: NotIn
+          values: ["sidecar-injector"]

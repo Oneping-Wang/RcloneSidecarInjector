@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sidecar-injector
+  namespace: default
+  labels:
+    app: sidecar-injector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sidecar-injector
+  template:
+    metadata:
+      labels:
+        app: sidecar-injector
+    spec:
+      containers:
+        - name: sidecar-injector
+          # 👇 push 到 GHCR 的真实镜像地址！
+          image: ghcr.io/oneping-wang/rclonesidecarinjector:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8443
+          # 👇 让程序去这里找证书
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /etc/webhook/certs
+              readOnly: true
+      # 👇 把 Secret 变成一个“卷”
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: sidecar-injector-tls
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sidecar-injector-service
+  namespace: default
+spec:
+  ports:
+    - port: 443
+      targetPort: 8443
+  selector:
+    app: sidecar-injector

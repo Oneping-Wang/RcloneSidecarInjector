@@ -14,10 +14,13 @@ func main() {
 	// 使用我们封装好的 mutation 包来处理请求
 	http.HandleFunc("/mutate", mutation.HandleMutate)
 
+	certFile := "/etc/webhook/certs/tls.crt"
+	keyFile := "/etc/webhook/certs/tls.key"
+
 	port := "8443"
 	fmt.Printf("Starting Webhook Server on port %s...\n", port)
 
-	err := http.ListenAndServe(":"+port, nil)
+	err := http.ListenAndServeTLS(":"+port, certFile, keyFile, nil)
 	if err != nil {
 		fmt.Printf("Failed to start server: %v\n", err)
 		os.Exit(1)

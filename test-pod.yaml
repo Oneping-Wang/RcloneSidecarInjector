@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: auto-injected-nginx
+  annotations:
+    # 👇 这就是我们的暗号！
+    rclone.io/inject: "true"
+spec:
+  containers:
+    - name: nginx
+      image: nginx:alpine
+      ports:
+        - containerPort: 80
